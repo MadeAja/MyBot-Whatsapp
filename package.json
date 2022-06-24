@@ -1,0 +1,46 @@
+{
+  "name": "bot_wa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@adiwajshing/baileys": "^4.2.0",
+    "@adiwajshing/keyed-db": "^0.2.4",
+    "@vitalets/google-translate-api": "^8.0.0",
+    "awesome-phonenumber": "^3.0.2",
+    "axios": "^0.27.2",
+    "chalk": "^4.1.2",
+    "cheerio": "^1.0.0-rc.10",
+    "child_process": "^1.0.2",
+    "crypto": "^1.0.1",
+    "file-type": "^10.11.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "fs": "0.0.1-security",
+    "human-readable": "^0.2.1",
+    "jimp": "^0.16.1",
+    "moment-timezone": "^0.5.34",
+    "node-cron": "^3.0.0",
+    "node-fetch": "^2.6.1",
+    "node-webpmux": "^3.1.0",
+    "os": "^0.1.2",
+    "path": "^0.12.7",
+    "perf_hooks": "0.0.1",
+    "pino": "^7.0.5",
+    "qrcode-terminal": "^0.12.0",
+    "request": "^2.88.2",
+    "stream": "^0.0.2",
+    "translate-google": "^1.5.0",
+    "util": "^0.12.4",
+    "yargs": "^17.2.1"
+  },
+  "directories": {
+    "lib": "lib"
+  }
+}
