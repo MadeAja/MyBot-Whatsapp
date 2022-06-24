@@ -10,7 +10,7 @@ const path = require('path')
 const axios = require('axios')
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('./lib/functions')
+const {startHttp, smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('./lib/functions')
 
 const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) })
 
@@ -51,7 +51,9 @@ async function start() {
             console.log(err)
         }
     })
+
     
+
     // Group Update
     madeaja.ev.on('groups.update', async pea => {
        //console.log(pea)
@@ -187,8 +189,11 @@ async function start() {
             else madeaja.end(`Unknown DisconnectReason: ${reason}|${connection}`)
         }
         console.log('Connected...', update)
+        if(update.isOnline){
+            startHttp(madeaja)
+        }
     })
-
+   
     madeaja.ev.on('creds.update', saveState)
 
     // Add Other
