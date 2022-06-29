@@ -56,20 +56,16 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
             server.sendMessage(Whatsapp.chat, {text: "Test Juga"}, {quoted: Whatsapp})
             break;
             case "translate":
-
+            case "tr":
+            case "kamus": 
             let bahasa = args[0]
-
-
             let sebelum = args.slice(1).join(' ')
-
             if(!bahasa || sebelum === ""){
-                Whatsapp.reply("error")
+                Whatsapp.reply("Error kak")
                 return;
             }
-console.log(bahasa)
-console.log(sebelum)
-                translate("sebelum", {to: 'en'}).then(res => {
-                    Whatsapp.reply("Nih kak\n" + res.text)
+                translate(sebelum, {to: bahasa}).then(res => {
+                    Whatsapp.reply("Hasil translate\n" + res.text)
                 }).catch(err => {
                     Whatsapp.reply("Error kak! -> " + err)
                 });
