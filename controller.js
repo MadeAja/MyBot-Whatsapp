@@ -11,7 +11,8 @@ const os = require('os')
 const moment = require('moment-timezone')
 const { smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, parseMention, getRandom, getGroupAdmins } = require('./lib/functions')
 const translate = require('@vitalets/google-translate-api');
-
+const wita = moment(Date.now()).tz('Asia/Makassar').locale('id').format('HH:mm:ss z')
+const wit = moment(Date.now()).tz('Asia/Jayapura').locale('id').format('HH:mm:ss z')
 
 
 module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
@@ -43,33 +44,76 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
             if (!Whatsapp.key.fromMe) return
         }
 
-        // Push Message To Console && Auto Read
-        if (Whatsapp.message) {
+        if (global.bot.fase === "beta" && Whatsapp.message) {
             server.sendReadReceipt(Whatsapp.chat, Whatsapp.sender, [Whatsapp.key.id])    
-            console.log(`\nNew Messages:\nPesan: ${(budy || Whatsapp.mtype)}\nDari: ${pushname + Whatsapp.sender}\nDi: ${(Whatsapp.isGroup ? pushname : 'Private Chat') + Whatsapp.chat}\nWaktu: ${moment(new Date()).format('DD/MM/YY HH:mm:ss')}`)
+            console.log(`\nNew Messages:\nPesan: ${(budy || Whatsapp.mtype)}\nDari: ${pushname + Whatsapp.sender}\nDi: ${(Whatsapp.isGroup ? pushname : 'Private Chat') + Whatsapp.chat}\nWaktu: ${wita}`);
         }
 
 
 
        switch(command){
-        case "tes":
-            server.sendMessage(Whatsapp.chat, {text: "Test Juga"}, {quoted: Whatsapp})
-            break;
-            case "translate":
-            case "tr":
-            case "kamus": 
-            let bahasa = args[0]
-            let sebelum = args.slice(1).join(' ')
-            if(!bahasa || sebelum === ""){
-                Whatsapp.reply("Error kak")
+
+        //TRANSLATE COMMAND
+        case "translate":
+        case "tr":
+        let bahasa = args[0]
+        let sebelum = args.slice(1).join(' ')
+        if(!bahasa || sebelum === ""){
+            Whatsapp.reply("error")
+            return;
+        }
+            translate(sebelum, {to: 'en'}).then(res => {
+                Whatsapp.reply("Nih kak\n" + res.text)
+            }).catch(err => {
+                Whatsapp.reply("Error kak! -> " + err)
+            });
+        break;
+
+
+
+        //AIUEO COMMAND
+        case 'halah': case 'hilih': case 'huluh': case 'heleh': case 'holoh':
+            if (!Whatsapp.quoted && !text) throw `Kirim/reply text dengan caption ${prefix + command}`
+            ter = command[1].toLowerCase()
+            tex = Whatsapp.quoted ? Whatsapp.quoted.text ? Whatsapp.quoted.text : q ? q : Whatsapp.text : q ? q : Whatsapp.text
+            Whatsapp.reply(tex.replace(/[aiueo]/g, ter).replace(/[AIUEO]/g, ter.toUpperCase()));
+        break;
+
+        //MEME COMMAND
+        case "meme":
+            let err = `Kirim/reply image/sticker dengan caption ${prefix + command} text1|text2`;
+	        if (!/image/.test(mime) || !text) {
+                Whatsapp.reply(err)
                 return;
             }
-                translate(sebelum, {to: bahasa}).then(res => {
-                    Whatsapp.reply("Hasil translate\n" + res.text)
-                }).catch(err => {
-                    Whatsapp.reply("Error kak! -> " + err)
-                });
+            let titleMeme = {
+                top: text.split('|')[0] ? text.split('|')[0] : '',
+                bottom: text.split('|')[1] ? text.split('|')[1] : ''
+            }
+            let srcImage = await quoted.download()
+            server.sendMemeAsSticker(Whatsapp.chat, srcImage, titleMeme, Whatsapp, { packname: global.bot.packageName, author: "MAdeAja"});
             break;
+
+            //STICKER COMMAND
+            case 'sticker': case 's': case 'stickergif': case 'sgif': {
+                if (!quoted) throw `Balas Video/Image Dengan Caption ${prefix + command}`
+                      Whatsapp.reply("TUnggu")
+                    if (/image/.test(mime)) {
+                    let media = await quoted.download()
+                    let afterProcessSticker = await server.sendImageAsSticker(Whatsapp.chat, media, Whatsapp, { packname: global.bot.packageName, author: "MadeAja" })
+                     await fs.unlinkSync(afterProcessSticker)
+                } else if (/video/.test(mime)) {
+                        if ((quoted.msg || quoted).seconds > 11) return Whatsapp.reply('Maksimal 10 detik!')
+                        let media = await quoted.download()
+                    let afterProcessSticker = await server.sendVideoAsSticker(Whatsapp.chat, media, Whatsapp, { packname: global.bot.packageName, author: "MadeAjA"})
+                    await fs.unlinkSync(afterProcessSticker)
+                } else {
+                    throw `Kirim Gambar/Video Dengan Caption ${prefix + command}\nDurasi Video 1-9 Detik`
+                    } 
+                }
+                break
+
+
        }
     
     

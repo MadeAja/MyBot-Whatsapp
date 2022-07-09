@@ -11,6 +11,8 @@ const axios = require('axios')
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
 const {startHttp, smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('./lib/functions')
+const {createCanvas, loadImage, registerFont } = require('canvas')
+registerFont('./lib/font/Maximum Impact.ttf', { family: 'Impact' })
 
 const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) })
 
@@ -171,7 +173,7 @@ async function start() {
         return status
     }
 	
-    madeaja.public = true
+    madeaja.public = global.bot.public
 
     madeaja.serializeM = (m) => smsg(madeaja, m, store)
 
@@ -444,6 +446,60 @@ async function start() {
 
         await madeaja.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
         return buffer
+    }
+    madeaja.sendMemeAsSticker = async (jid, mediaDownload, titleSticker, quoted, options = {}) => {
+   
+            const image = await loadImage(mediaDownload);
+            const width = image.width;
+            const height = image.height;
+            const topText = titleSticker.top
+            const bottomText = titleSticker.bottom
+            const canvas = createCanvas(width, height)
+            const ctx = canvas.getContext('2d')
+         
+         
+            const fontSize = Math.floor(width / 8);
+            const yOffset = height / 25;
+         
+           // Update canvas background
+           canvas.width = width;
+           canvas.height = height;
+           ctx.drawImage(image, 0, 0);
+         
+           // Prepare text
+           ctx.strokeStyle = "black";
+           ctx.lineWidth = Math.floor(fontSize / 4);
+           ctx.fillStyle = "white";
+           ctx.textAlign = "center";
+           ctx.lineJoin = "round";
+           ctx.font = `${fontSize}px Impact`;
+         
+           // Add top text
+           ctx.textBaseline = "top";
+           ctx.strokeText(topText, width / 2, yOffset);
+           ctx.fillText(topText, width / 2, yOffset);
+         
+           // Add bottom text
+           ctx.textBaseline = "bottom";
+           ctx.strokeText(bottomText, width / 2, height - yOffset);
+           ctx.fillText(bottomText, width / 2, height - yOffset);
+            let path = canvas.toBuffer()
+           let buff = await Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
+       
+        let buffer
+        if (options && (options.packname || options.author)) {
+            buffer = await writeExifImg(buff, options)
+        } else {
+            buffer = await imageToWebp(buff)
+        }
+
+        await madeaja.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
+        return buffer
+
+      
+       
+    
+       
     }
 
     /**
