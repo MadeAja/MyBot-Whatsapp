@@ -58,7 +58,7 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
         case "tr":
         let inputText = args[0]
         let language = args.slice(1).join(' ')
-        if(!bahasa || sebelum === ""){
+        if(!language || sebelum === ""){
             Whatsapp.reply("error")
             return;
         }
