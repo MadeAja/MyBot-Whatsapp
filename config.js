@@ -6,7 +6,7 @@ const chalk = require('chalk')
 global.bot = {
     name: 'Alexa Bot',
     version: '1.0.0',
-    fase: 'beta',
+    fase: 'public',
     public: true,
     number: '+1 (203) 587-2508',
     packageName: "APA LO",
