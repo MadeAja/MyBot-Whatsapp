@@ -54,6 +54,7 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
 
        switch(command){
             case "translate":
+                case "tr":
             let bahasa = args[0]
             let sebelum = args.slice(1).join(' ')
             if(!bahasa || sebelum === ""){
