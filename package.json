@@ -27,6 +27,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "fs": "0.0.1-security",
     "human-readable": "^0.2.1",
+    "hxz-api": "^1.0.1",
     "jimp": "^0.16.1",
     "moment-timezone": "^0.5.34",
     "node-cron": "^3.0.0",
@@ -41,6 +42,7 @@
     "stream": "^0.0.2",
     "translate-google": "^1.5.0",
     "util": "^0.12.4",
+    "xfarr-api": "^2.0.0",
     "yargs": "^17.2.1"
   },
   "directories": {

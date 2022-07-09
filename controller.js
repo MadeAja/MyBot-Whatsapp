@@ -13,7 +13,7 @@ const { smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, 
 const translate = require('@vitalets/google-translate-api');
 const wita = moment(Date.now()).tz('Asia/Makassar').locale('id').format('HH:mm:ss z')
 const wit = moment(Date.now()).tz('Asia/Jayapura').locale('id').format('HH:mm:ss z')
-
+const openAPI = require('xfarr-api');
 
 module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
     try {
@@ -70,7 +70,6 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
         break;
 
 
-
         //AIUEO COMMAND
         case 'halah': case 'hilih': case 'huluh': case 'heleh': case 'holoh':
             if (!Whatsapp.quoted && !text) throw `Kirim/reply text dengan caption ${prefix + command}`
@@ -112,6 +111,58 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
                     } 
                 }
                 break
+
+                //TIKTOK DONWLOADER COMMAND
+                case "tiktok":
+                    if (!q) return Whatsapp.reply('Linknya?')
+			    if (!isUrl(q) && !q.includes('tiktok.com')) return Whatsapp.reply('Invalid link')
+                    openAPI.downloader.tiktok(q).then(result => {
+                        let txt = `*----「 TIKTOK DOWNLOAD MP4 」----*\n\n`
+                        txt += `*• Title :* ${result.title}\n`
+                        txt += `*• Duration :* ${result.duration}\n`
+                        txt += `*• Quality :* ${result.media[1].quality}\n`
+                        txt += `*• Ext :* ${result.media[1].extension}\n`
+                        txt += `*• Size :* ${result.media[1].formattedSize}\n`
+                        txt += `*• Url  :* ${q}\n\n`
+                        txt += `*Tunggu sedang dikirim*`
+                        Whatsapp.reply(txt)
+                        for(let i of result.media){
+                          if(i.quality.includes('hd')){
+                            server.sendFileUrl(Whatsapp.chat, i.url, "Ni cui", Whatsapp)
+                          }
+                        };
+                      });
+                break;
+                case "soundcloud":
+                    if(!q)return Whatsapp.reply(`Example : ${prefix + command} link SoundCloud`)
+                    if (!q.includes('m.soundcloud.com')) return Whatsapp.reply('Itu bukan link SoundCloud')
+                    openAPI.downloader.soundcloud(q).then(async (result) => {
+                        let txt = `*----「 SOUNDCLOUD DOWNLOAD 」----*\n\n`
+                        txt += `*• Title :* ${result.title}\n`
+                        txt += `*• Duration :* ${result.duration}\n`
+                        txt += `*• Quality :* ${result.quality}\n`
+                        txt += `*Tunggu sedang dikirim*`
+                    
+                        server.sendFileUrl(Whatsapp.chat, result.thumbnail, txt, Whatsapp)
+                        server.sendFileUrl(Whatsapp.chat, result.download, "Ni cui", Whatsapp)
+                    });
+
+
+                    break;
+                    case "youtube":
+                        if(!q)return Whatsapp.reply(`Example : ${prefix + command} link Youtube`)
+                        openAPI.downloader.youtube(q).then(async (result) => {
+                            let txt = `*----「 YOUTUBE DOWNLOAD 」----*\n\n`
+                            txt += `*• Title :* ${result.title}\n`
+                            txt += `*• Author :* ${result.username}\n`
+                            txt += `*• Quality :* ${result.fquality}\n`
+                            txt += `*Tunggu sedang dikirim*`
+                            server.sendFileUrl(Whatsapp.chat, result.thumbnail, txt, Whatsapp)
+                            server.sendFileUrl(Whatsapp.chat, result.download_url, "Ni cui", Whatsapp)
+                        });
+
+
+                            break;
 
 
        }

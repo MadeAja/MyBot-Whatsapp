@@ -17,7 +17,7 @@ global.bot = {
 
 global.owner = {
     name: 'MadeAja',
-    number: '085333389277'
+    number: '-----'
 }
 
 
