@@ -11,7 +11,8 @@ const os = require('os')
 const moment = require('moment-timezone')
 const { smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, parseMention, getRandom, getGroupAdmins } = require('./lib/functions')
 const translate = require('@vitalets/google-translate-api');
-
+const wita = moment(Date.now()).tz('Asia/Makassar').locale('id').format('HH:mm:ss z')
+const wit = moment(Date.now()).tz('Asia/Jayapura').locale('id').format('HH:mm:ss z')
 
 
 module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
@@ -46,34 +47,34 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
         // Push Message To Console && Auto Read
         if (Whatsapp.message) {
             server.sendReadReceipt(Whatsapp.chat, Whatsapp.sender, [Whatsapp.key.id])    
-            console.log(`\nNew Messages:\nPesan: ${(budy || Whatsapp.mtype)}\nDari: ${pushname + Whatsapp.sender}\nDi: ${(Whatsapp.isGroup ? pushname : 'Private Chat') + Whatsapp.chat}\nWaktu: ${moment(new Date()).format('DD/MM/YY HH:mm:ss')}`)
+            console.log(`\nNew Messages:\nPesan: ${(budy || Whatsapp.mtype)}\nDari: ${pushname + Whatsapp.sender}\nDi: ${(Whatsapp.isGroup ? pushname : 'Private Chat') + Whatsapp.chat}\nWaktu: ${wita}`)
         }
 
 
 
        switch(command){
-        case "tes":
-            server.sendMessage(Whatsapp.chat, {text: "Test Juga"}, {quoted: Whatsapp})
-            break;
             case "translate":
-
             let bahasa = args[0]
-
-
             let sebelum = args.slice(1).join(' ')
-
             if(!bahasa || sebelum === ""){
                 Whatsapp.reply("error")
                 return;
             }
-console.log(bahasa)
-console.log(sebelum)
                 translate("sebelum", {to: 'en'}).then(res => {
                     Whatsapp.reply("Nih kak\n" + res.text)
                 }).catch(err => {
                     Whatsapp.reply("Error kak! -> " + err)
                 });
             break;
+            case 'halah': case 'hilih': case 'huluh': case 'heleh': case 'holoh':
+                if (!Whatsapp.quoted && !text) throw `Kirim/reply text dengan caption ${prefix + command}`
+                ter = command[1].toLowerCase()
+                tex = Whatsapp.quoted ? Whatsapp.quoted.text ? Whatsapp.quoted.text : q ? q : Whatsapp.text : q ? q : Whatsapp.text
+                Whatsapp.reply(tex.replace(/[aiueo]/g, ter).replace(/[AIUEO]/g, ter.toUpperCase()));
+            break;
+            
+
+           
        }
     
     
