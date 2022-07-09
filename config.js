@@ -9,7 +9,7 @@ global.bot = {
     fase: 'public',
     public: true,
     number: '+1 (203) 587-2508',
-    packageName: "APA LO",
+    packageName: "APA LO COK",
     prefix: '#',
     prefixs: ['','!','.','🐦','🐤','🗿']
 }
