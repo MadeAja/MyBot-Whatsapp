@@ -10,7 +10,7 @@ const path = require('path')
 const axios = require('axios')
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
-const {startHttp, smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('./lib/functions')
+const {startHttp, smsg, wrapText, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('./lib/functions')
 const {createCanvas, loadImage, registerFont } = require('canvas')
 registerFont('./lib/font/Maximum Impact.ttf', { family: 'Impact' })
 
@@ -21,7 +21,7 @@ async function start() {
     const madeaja = WhatsAppConnect({
         logger: pino({ level: 'silent' }),
         printQRInTerminal: true,
-        browser: ['MadeAja','Chrome','4.0.0'],
+        browser: ['MadeAja Bot','Chrome','4.0.0'],
         auth: state
     })
 
@@ -230,6 +230,16 @@ async function start() {
       }
       }
 
+    madeaja.sendVideoFromUrl = async (jid, url, caption, quoted, options = {}) => {
+       
+    return madeaja.sendMessage(jid, { video: await getBuffer(url), caption: caption, mimetype: 'video/mp4', ...options}, { quoted: quoted, ...options })
+        
+        }
+    madeaja.sendImageFromUrl = async (jid, url, caption, quoted, options = {}) => {
+    
+    return madeaja.sendMessage(jid, { image: await getBuffer(url), caption: caption, ...options}, { quoted: quoted, ...options})
+            
+        }
     /** Send List Messaage
       *
       *@param {*} jid
@@ -495,12 +505,63 @@ async function start() {
 
         await madeaja.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
         return buffer
-
-      
-       
-    
-       
     }
+    madeaja.sendMemev2AsSticker = async (jid, mediaDownload, titleSticker, quoted, options = {}) => {
+   
+        const image = await loadImage(mediaDownload);
+        const width = image.width;
+        const height = image.height;
+        const topText = titleSticker.top
+        const bottomText = titleSticker.bottom
+        const canvas = createCanvas(width, height)
+        const ctx = canvas.getContext('2d')
+
+        let lineHeight = 1.5;
+        const fontFamily = 'Impact';
+        const fontSize = 80;
+     
+        canvas.width = width;
+        canvas.height = height;
+        
+        
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 5;
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.lineJoin = "round";
+        ctx.font = `${fontSize}px Impact`;
+    
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+     
+ 
+    
+        let x = width / 2
+        let y;
+        if(topText){
+        ctx.textBaseline = "top";
+        y = 0
+        wrapText(ctx, topText, x, y, width, lineHeight, false, fontSize, fontFamily);
+        }
+        if(bottomText){
+        y = height;
+        ctx.textBaseline = 'bottom';
+        wrapText(ctx, bottomText, x, y, height, lineHeight, true, fontSize, fontFamily);
+        }
+
+        let path = canvas.toBuffer()
+        let buff = await Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
+    
+        let buffer
+        if (options && (options.packname || options.author)) {
+            buffer = await writeExifImg(buff, options)
+        } else {
+            buffer = await imageToWebp(buff)
+        }
+
+        await madeaja.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
+        return buffer
+}
 
     /**
      * 

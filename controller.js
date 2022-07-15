@@ -14,6 +14,7 @@ const translate = require('@vitalets/google-translate-api');
 const wita = moment(Date.now()).tz('Asia/Makassar').locale('id').format('HH:mm:ss z')
 const wit = moment(Date.now()).tz('Asia/Jayapura').locale('id').format('HH:mm:ss z')
 const openAPI = require('xfarr-api');
+const openAPI2 = require('hxz-api');
 
 module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
     try {
@@ -56,8 +57,8 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
         //TRANSLATE COMMAND
         case "translate":
         case "tr":
-        let inputText = args[0]
-        let language = args.slice(1).join(' ')
+        let language = args[0]
+        let inputText = args.slice(1).join(' ')
         if(!language || inputText === ""){
             Whatsapp.reply("error")
             return;
@@ -65,7 +66,8 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
             translate(inputText, {to: language}).then(res => {
                 Whatsapp.reply(res.text)
             }).catch(err => {
-                Whatsapp.reply("Error kak!")
+                console.log("Translate Error: " + err);
+                Whatsapp.reply("Error kak!");
             });
         break;
 
@@ -90,83 +92,100 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
                 bottom: text.split('|')[1] ? text.split('|')[1] : ''
             }
             let srcImage = await quoted.download()
-            server.sendMemeAsSticker(Whatsapp.chat, srcImage, titleMeme, Whatsapp, { packname: global.bot.packageName, author: "MAdeAja"});
+            server.sendMemev2AsSticker(Whatsapp.chat, srcImage, titleMeme, Whatsapp, { packname: global.bot.packageName, author: "MAdeAja"});
             break;
 
             //STICKER COMMAND
-            case 'sticker': case 's': case 'stickergif': case 'sgif': {
-                if (!quoted) throw `Balas Video/Image Dengan Caption ${prefix + command}`
-                      Whatsapp.reply("TUnggu")
-                    if (/image/.test(mime)) {
-                    let media = await quoted.download()
-                    let afterProcessSticker = await server.sendImageAsSticker(Whatsapp.chat, media, Whatsapp, { packname: global.bot.packageName, author: "MadeAja" })
-                     await fs.unlinkSync(afterProcessSticker)
-                } else if (/video/.test(mime)) {
-                        if ((quoted.msg || quoted).seconds > 11) return Whatsapp.reply('Maksimal 10 detik!')
-                        let media = await quoted.download()
-                    let afterProcessSticker = await server.sendVideoAsSticker(Whatsapp.chat, media, Whatsapp, { packname: global.bot.packageName, author: "MadeAjA"})
+        case 'sticker': case 's': case 'stickergif': case 'sgif': {
+            if (!quoted) throw `Balas Video/Image Dengan Caption ${prefix + command}`
+                    Whatsapp.reply("TUnggu")
+                if (/image/.test(mime)) {
+                let media = await quoted.download()
+                let afterProcessSticker = await server.sendImageAsSticker(Whatsapp.chat, media, Whatsapp, { packname: global.bot.packageName, author: "MadeAja" })
                     await fs.unlinkSync(afterProcessSticker)
-                } else {
-                    throw `Kirim Gambar/Video Dengan Caption ${prefix + command}\nDurasi Video 1-9 Detik`
-                    } 
+            } else if (/video/.test(mime)) {
+                    if ((quoted.msg || quoted).seconds > 11) return Whatsapp.reply('Maksimal 10 detik!')
+                    let media = await quoted.download()
+                let afterProcessSticker = await server.sendVideoAsSticker(Whatsapp.chat, media, Whatsapp, { packname: global.bot.packageName, author: "MadeAjA"})
+                await fs.unlinkSync(afterProcessSticker)
+            } else {
+                throw `Kirim Gambar/Video Dengan Caption ${prefix + command}\nDurasi Video 1-9 Detik`
+                } 
+            }
+        break
+
+        //TIKTOK DONWLOADER COMMAND
+        case "tiktok":
+            if (!q) return Whatsapp.reply('Linknya?')
+        if (!isUrl(q) && !q.includes('tiktok.com')) return Whatsapp.reply('Invalid link')
+        openAPI2.ttdownloader(q).then(result => {
+            const { wm, nowm, audio } = result
+            Whatsapp.reply("Wait sedang dikirim")
+            axios.get(`https://tinyurl.com/api-create.php?url=${nowm}`)
+            .then(async (a) => {
+                server.sendVideoFromUrl(Whatsapp.chat, a.data, "Ni cui", Whatsapp)
+                });
+            }).catch((err) => reply(`Link tidak valid`))
+        break;
+
+        case "youtube":
+            if(!q)return Whatsapp.reply(`Example : ${prefix + command} link Youtube`)
+            if(!isUrl(q))return Whatsapp.reply('Bukan sebuah link');
+            if(q.includes('youtube.com') || q.includes('youtu.be')){
+            openAPI2.youtube(q).then(async (result) => {
+                Whatsapp.reply("Wait sedang dikirim")
+                axios.get(`https://tinyurl.com/api-create.php?url=${result.link}`)
+                .then(async (a) => {
+                    server.sendVideoFromUrl(Whatsapp.chat, a.data, "Ni cui", Whatsapp)
+                    })
+                .catch((err) => {})
+            }).catch((err) => Whatsapp.reply(`Link tidak valid`))
+        }
+            break;
+        case "textpro":
+            let url = args[0]
+            let textInput = args.slice(1).join(' ')
+            if(!url || textInput === ""){
+                Whatsapp.reply("Mohon masukkan url dan text, https://textpro.me/create-neon-light-on-brick-wall-online-1062.html")
+                return;
+            }
+            openAPI.maker.textpro(url, textInput).then(result => {
+                server.sendImageFromUrl(Whatsapp.chat, result.result, "Nih", Whatsapp)
+             }).catch(err => {
+                console.log("Textpro Error: " + err);
+                Whatsapp.reply("Error kak!");
+            });
+            break;
+            case "photooxy":
+                let photooxyURL = args[0]
+                let photooxytextInput = args.slice(1).join(' ')
+                if(!photooxyURL || photooxytextInput === ""){
+                    Whatsapp.reply("Mohon masukkan url dan text")
+                    return;
                 }
-                break
-
-                //TIKTOK DONWLOADER COMMAND
-                case "tiktok":
-                    if (!q) return Whatsapp.reply('Linknya?')
-			    if (!isUrl(q) && !q.includes('tiktok.com')) return Whatsapp.reply('Invalid link')
-                    openAPI.downloader.tiktok(q).then(result => {
-                        let txt = `*----「 TIKTOK DOWNLOAD MP4 」----*\n\n`
-                        txt += `*• Title :* ${result.title}\n`
-                        txt += `*• Duration :* ${result.duration}\n`
-                        txt += `*• Quality :* ${result.media[1].quality}\n`
-                        txt += `*• Ext :* ${result.media[1].extension}\n`
-                        txt += `*• Size :* ${result.media[1].formattedSize}\n`
-                        txt += `*• Url  :* ${q}\n\n`
-                        txt += `*Tunggu sedang dikirim*`
-                        Whatsapp.reply(txt)
-                        for(let i of result.media){
-                          if(i.quality.includes('hd')){
-                            server.sendFileUrl(Whatsapp.chat, i.url, "Ni cui", Whatsapp)
-                          }
-                        };
-                      });
+                openAPI.maker.photooxy(photooxyURL, photooxytextInput).then(result => {
+                    server.sendImageFromUrl(Whatsapp.chat, result.result, "Nih.", Whatsapp)
+                 }).catch(err => {
+                    console.log("Photooxy Error: " + err);
+                    Whatsapp.reply("Error kak!");
+                });
                 break;
-                case "soundcloud":
-                    if(!q)return Whatsapp.reply(`Example : ${prefix + command} link SoundCloud`)
-                    if (!q.includes('m.soundcloud.com')) return Whatsapp.reply('Itu bukan link SoundCloud')
-                    openAPI.downloader.soundcloud(q).then(async (result) => {
-                        let txt = `*----「 SOUNDCLOUD DOWNLOAD 」----*\n\n`
-                        txt += `*• Title :* ${result.title}\n`
-                        txt += `*• Duration :* ${result.duration}\n`
-                        txt += `*• Quality :* ${result.quality}\n`
-                        txt += `*Tunggu sedang dikirim*`
-                    
-                        server.sendFileUrl(Whatsapp.chat, result.thumbnail, txt, Whatsapp)
-                        server.sendFileUrl(Whatsapp.chat, result.download, "Ni cui", Whatsapp)
+                case "ephoto":
+                    let ephotoURL = args[0]
+                    let ephototextInput = args.slice(1).join(' ')
+                    if(!ephotoURL || ephototextInput === ""){
+                        Whatsapp.reply("Mohon masukkan url dan text")
+                        return;
+                    }
+                    openAPI.maker.ephoto(ephotoURL, ephototextInput).then(result => {
+                        console.log(result)
+                        server.sendImageFromUrl(Whatsapp.chat, result.result, "Nih.", Whatsapp)
+                     }).catch(err => {
+                        console.log("Ephoto Error: " + err);
+                        Whatsapp.reply("Error kak!");
                     });
-
-
                     break;
-                    case "youtube":
-                        if(!q)return Whatsapp.reply(`Example : ${prefix + command} link Youtube`)
-                        openAPI.downloader.youtube(q).then(async (result) => {
-                            let txt = `*----「 YOUTUBE DOWNLOAD 」----*\n\n`
-                            txt += `*• Title :* ${result.title}\n`
-                            txt += `*• Author :* ${result.username}\n`
-                            txt += `*• Quality :* ${result.fquality}\n`
-                            txt += `*Tunggu sedang dikirim*`
-                            server.sendFileUrl(Whatsapp.chat, result.thumbnail, txt, Whatsapp)
-                            server.sendFileUrl(Whatsapp.chat, result.download_url, "Ni cui", Whatsapp)
-                        });
-
-
-                            break;
-
-
        }
-    
     
     }catch(e){
         console.log("Error -> "+e)
