@@ -10,6 +10,7 @@ const path = require('path')
 const os = require('os')
 const moment = require('moment-timezone')
 const { smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, parseMention, getRandom, getGroupAdmins } = require('./lib/functions')
+const {uploadImages} = require('./lib/fetcher');
 const translate = require('@vitalets/google-translate-api');
 const wita = moment(Date.now()).tz('Asia/Makassar').locale('id').format('HH:mm:ss z')
 const wit = moment(Date.now()).tz('Asia/Jayapura').locale('id').format('HH:mm:ss z')
@@ -33,6 +34,11 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
         const mime = (quoted.msg || quoted).mimetype || ''
         const isMedia = /image|video|sticker|audio/.test(mime)
 	
+        const isQuotedImage = mime === 'image'
+        const isQuotedVideo = mime === 'video'
+        const isQuotedSticker = mime === 'sticker'
+        const isQuotedGif = mime === 'image/gif'
+
         // Group
         const groupMetadata = Whatsapp.isGroup ? await server.groupMetadata(Whatsapp.chat).catch(e => {}) : ''
         const groupName = Whatsapp.isGroup ? groupMetadata.subject : ''
@@ -185,6 +191,17 @@ module.exports = server = async (server, Whatsapp, chatUpdate, store) => {
                         Whatsapp.reply("Error kak!");
                     });
                     break;
+                    case 'wasted':
+                            if (/image/.test(mime)){
+                                Whatsapp.reply("Wait sedang dikirim")
+                                let media = await quoted.download()
+                                let toBufferImage = await getBuffer(media)
+                            const imageToUrl = await uploadImages(toBufferImage, `dataFoto.${Whatsapp.chat.id}`)
+                      
+                            await server.sendImageFromUrl(Whatsapp.chat, `https://some-random-api.ml/canvas/wasted?avatar=${imageToUrl}`, 'Wasted.jpg', 'Ini..., sticker nya lagi di kirim', id).then(() => server.sendStickerfromUrl(Whatsapp.chat, `https://some-random-api.ml/canvas/wasted?avatar=${imageToUrl}`))
+                            console.log('Success sending Wasted image!')
+                            }
+                    
        }
     
     }catch(e){

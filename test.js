@@ -226,17 +226,17 @@ const fs = require('fs');
 
 
 
-const xfarr = require('xfarr-api');
+// const xfarr = require('xfarr-api');
 
-// xfarr.fbdown('https://www.facebook.com/watch/?v=1261400897598197').then(res =>	{
-// 	console.log(res)
-// }).catch(err => {console.log('error => ', err)});
+// // xfarr.fbdown('https://www.facebook.com/watch/?v=1261400897598197').then(res =>	{
+// // 	console.log(res)
+// // }).catch(err => {console.log('error => ', err)});
 
-const url = 'https://i.pinimg.com/236x/86/bb/a9/86bba905d055f8c523afafca0aabc93b--seraph-of-the-end-anime-characters.jpg'
+// const url = 'https://i.pinimg.com/236x/86/bb/a9/86bba905d055f8c523afafca0aabc93b--seraph-of-the-end-anime-characters.jpg'
 
-xfarr.search.chord(
-	'Ngugut Jeriji'
-).then(res => {console.log(res)});
+// xfarr.search.chord(
+// 	'Ngugut Jeriji'
+// ).then(res => {console.log(res)});
 
 // hx.youtube(link)
 //     .then(result => {
@@ -290,4 +290,30 @@ xfarr.search.chord(
 
 
 
+const ff = require('fluent-ffmpeg');
+const path = require("path")
+const { tmpdir } = require("os")
+const Crypto = require("crypto")
 
+addTextVideo()
+
+async function addTextVideo () {
+	const tmpFileOut = path.join(__dirname + "/temp/", `${Crypto.randomBytes(6).readUIntLE(0, 6).toString(36)}.mp4`)
+
+
+	const font = __dirname + "/font/Maximum Impact.ttf";
+    await new Promise((resolve, reject) => {
+        ff('./tes.mp4')
+            .on("error", reject)
+            .on("end", () => resolve(true))
+			.addOutputOptions([
+               '-vf',
+			   "drawtext=fontfile="+ font +":text='HALLO GAIS':fontcolor=white:fontsize=24:borderw=2:bordercolor=black:x=(w-text_w)/2:y=10,drawtext=fontfile="+ font +":text='MASA SI WKWKK':fontcolor=white:fontsize=24:borderw=2:bordercolor=black:x=(w-text_w)/2:y=h-th"
+				
+		])
+            .save(tmpFileOut)
+    })
+	const buff = fs.readFileSync(tmpFileOut)
+    fs.unlinkSync(tmpFileOut)
+	fs.writeFileSync('./tes/tes.mp4', buff)
+}
